@@ -7,15 +7,19 @@ import (
 	"github.com/airingone/log"
 	"github.com/airingone/pro_proto/helloword"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
+	"google.golang.org/grpc/resolver"
 	"net"
 	"testing"
+	"time"
 )
 
 //protoc --go_out=plugins=grpc:. helloword.proro
+//sever
 func TestGrpcServer(t *testing.T) {
 	config.InitConfig()                     //配置文件初始化
 	log.InitLog(config.GetLogConfig("log")) //日志初始化
-	_ = airetcd.RegisterLocalServerToEtcd(config.GetString("server.name"),
+	airetcd.RegisterLocalServerToEtcd(config.GetString("server.name"),
 		config.GetUInt32("server.port"), config.GetStringSlice("etcd.addrs")) //将服务注册到etcd集群
 
 	listen, err := net.Listen("tcp", ":"+config.GetString("server.port"))
@@ -30,6 +34,7 @@ func TestGrpcServer(t *testing.T) {
 type Server struct {
 }
 
+//服务实现
 func (s *Server) SayHello(ctx context.Context, in *helloword.HelloRequest) (*helloword.HelloReply, error) {
 	c := NewGrpcContext(ctx, "1234567") //需要在请求包带requestid
 	result := hello(c, in.Name)
@@ -42,43 +47,32 @@ func hello(ctx *GrpcContext, name string) string {
 	return "Hello" + name
 }
 
+//请求
 func TestGrpcClient(t *testing.T) {
 	config.InitConfig()                     //配置文件初始化
 	log.InitLog(config.GetLogConfig("log")) //日志初始化
-	/*
-		var endpoints []string //etcd集群的地址
-		endpoints = append(endpoints, "127.0.0.1:2380")
-		r := airetcd.NewGrpcResolver(config.GetString("server.name"), endpoints)
-		resolver.Register(r)
 
-		ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
-		addr := fmt.Sprintf("%s:///%s", r.Scheme(), "g.srv.mail")
-		conn, err := grpc.DialContext(ctx, addr, grpc.WithInsecure(),
-			grpc.WithBalancerName(roundrobin.Name),
-			grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"round_robin":{}}]}`),
-				grpc.WithBlock())
-		defer conn.Close()
-		if err != nil {
+	var endpoints []string //etcd集群的地址
+	endpoints = append(endpoints, "127.0.0.1:2380")
+	r := airetcd.NewGrpcResolver(endpoints)
+	resolver.Register(r)
 
-		}
-	*/
-	/*
-		conn, err := grpc.Dial("127.0.0.1:8080", grpc.WithInsecure())
-		if err != nil {
-			log.Error("Dial Err, %v", err)
-			return
-		}
-		defer conn.Close()
+	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+	conn, err := grpc.DialContext(ctx, config.GetString("server.name"),
+		grpc.WithInsecure(),
+		grpc.WithDefaultServiceConfig(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"round_robin":{}}]}`),
+		grpc.WithBlock())
+	defer conn.Close()
 
-		req := &helloword.HelloRequest{
-			Name: "test",
-		}
-		c := helloword.NewGreeterClient(conn)
-		rsp, err := c.SayHello(context.Background(), req)
-		if err != nil {
-			log.Error("SayHello Err, %v", err)
-			return
-		}
-		log.Error("rsp:%+v", rsp)
-	*/
+	req := &helloword.HelloRequest{
+		Name: "test",
+	}
+	c := helloword.NewGreeterClient(conn)
+	rsp, err := c.SayHello(context.Background(), req)
+	if err != nil {
+		log.Error("SayHello Err, %v", err)
+		return
+	}
+	log.Error("rsp:%+v", rsp)
 }
