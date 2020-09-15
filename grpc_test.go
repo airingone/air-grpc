@@ -24,7 +24,7 @@ func TestGrpcServer(t *testing.T) {
 
 	listen, err := net.Listen("tcp", ":"+config.GetString("server.port"))
 	if err != nil {
-		log.Fatal("TestGrpcServer: listen failed, %+v", err)
+		log.Fatal("[GRPC]: TestGrpcServer listen failed, %+v", err)
 	}
 	server := grpc.NewServer()
 	helloword.RegisterGreeterServer(server, &Server{})
@@ -71,8 +71,8 @@ func TestGrpcClient(t *testing.T) {
 	c := helloword.NewGreeterClient(conn)
 	rsp, err := c.SayHello(context.Background(), req)
 	if err != nil {
-		log.Error("SayHello Err, %v", err)
+		log.Error("[GRPC]: SayHello Err, %v", err)
 		return
 	}
-	log.Error("rsp:%+v", rsp)
+	log.Error("[GRPC]: rsp:%+v", rsp)
 }
