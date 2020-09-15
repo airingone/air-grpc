@@ -3,8 +3,8 @@ module github.com/airingone/air-grpc
 go 1.13
 
 require (
-	github.com/airingone/air-etcd v1.0.0
-	github.com/airingone/config v0.0.0-20200903011120-8fa83e79df8e
+	github.com/airingone/air-etcd v1.0.2
+	github.com/airingone/config v1.0.7
 	github.com/airingone/log v0.0.0-20200831072359-6cec598b97cf
 	github.com/airingone/pro_proto v1.0.1
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect

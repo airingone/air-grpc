@@ -15,3 +15,7 @@ log:
 
 etcd:
   addrs: ["127.0.0.1:2380"]
+
+grpc_test:
+  name: grpc_test
+  timeOutMs: 3000

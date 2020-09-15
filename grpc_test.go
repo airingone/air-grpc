@@ -52,13 +52,14 @@ func TestGrpcClient(t *testing.T) {
 	config.InitConfig()                     //配置文件初始化
 	log.InitLog(config.GetLogConfig("log")) //日志初始化
 
-	var endpoints []string //etcd集群的地址
-	endpoints = append(endpoints, "127.0.0.1:2380")
-	r := airetcd.NewGrpcResolver(endpoints)
+	//每个服务全局注册一次
+	etcdConfig := config.GetGrpcConfig("grpc_test")
+	r := airetcd.NewGrpcResolver(config.GetEtcdConfig("etcd").Addrs)
 	resolver.Register(r)
 
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
-	conn, err := grpc.DialContext(ctx, config.GetString("server.name"),
+	//conn初始化一次即可，grpc会维护连接
+	ctx, _ := context.WithTimeout(context.Background(), time.Duration(etcdConfig.TimeOutMs)*time.Millisecond)
+	conn, err := grpc.DialContext(ctx, etcdConfig.Name, //obejct会传给etcd作为watch对象
 		grpc.WithInsecure(),
 		grpc.WithDefaultServiceConfig(roundrobin.Name),
 		grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"round_robin":{}}]}`),
