@@ -1,7 +1,8 @@
-# air-grpc
+# grpc组件
+## 1.组件描述
+这里没有做更多封装，在gin_test.go文件给出一个基于etcd发现服务的列子。
 
-etcd不兼容grpc新版本，等支持后再去掉replace：
-
+## 2.由于etcd支持的grpc版本有限制，需指定版本
 1.go mod:
 replace google.golang.org/grpc v1.31.1 => google.golang.org/grpc v1.26.0
 replace google.golang.org/api v0.15.1 => google.golang.org/api v0.14.0

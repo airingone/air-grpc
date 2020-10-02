@@ -3,9 +3,9 @@ module github.com/airingone/air-grpc
 go 1.13
 
 require (
-	github.com/airingone/air-etcd v1.0.2
-	github.com/airingone/config v1.0.7
-	github.com/airingone/log v0.0.0-20200831072359-6cec598b97cf
+	github.com/airingone/air-etcd 1.1.0
+	github.com/airingone/config 1.1.0
+	github.com/airingone/log 1.1.0
 	github.com/airingone/pro_proto v1.0.1
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-cmp v0.5.1 // indirect
